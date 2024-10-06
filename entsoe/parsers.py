@@ -28,18 +28,24 @@ def parse_prices(xml_text):
     -------
     pd.Series
     """
+    time_mapping = {
+        '15min': '15min',
+        '30min': '30min',
+        '60min': '60min',
+        '15T': '15min',
+        '30T': '30min',
+        '1H': '60min',
+        '1h': '60min',
+        'h': '60min',
+        '0.25H': '15min',
+        '0.5H': '30min',
+    }
     series = {
-        '15min': [],
-        '30min': [],
-        '60min': []
     }
     for soup in _extract_timeseries(xml_text):
         soup_series = _parse_timeseries_generic(soup, 'price.amount')
-        series[soup_series.index.freqstr].append(soup_series)
-
-    for freq, freq_series in series.items():
-        if len(freq_series) > 0:
-            series[freq] = pd.concat(freq_series).sort_index()
+        series[time_mapping[soup_series.index.freqstr]] = soup_series
+    
     return series
 
 
